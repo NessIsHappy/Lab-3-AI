@@ -4,7 +4,7 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
-from scipy import interp
+# from scipy import interp
 from itertools import cycle
 from sklearn import svm, datasets
 from sklearn.metrics import roc_auc_score
@@ -15,13 +15,13 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-train_dandelion_dir = os.path.join('train/Cat')
+train_dandelion_dir = os.path.join('train/dandelion')
 
-train_grass_dir = os.path.join('train/Dog')
+train_grass_dir = os.path.join('train/grass')
 
-valid_dandelion_dir = os.path.join('valid/Cat')
+valid_dandelion_dir = os.path.join('valid/dandelion')
 
-valid_grass_dir = os.path.join('valid/Dog')
+valid_grass_dir = os.path.join('valid/grass')
 
 train_dandelion_names = os.listdir(train_dandelion_dir)
 
@@ -56,20 +56,19 @@ for i, img_path in enumerate(next_dandelion_pic + next_grass_pic):
   plt.imshow(img)
 
 plt.show()
-
 train_datagen = ImageDataGenerator(rescale=1/255)
 validation_datagen = ImageDataGenerator(rescale=1/255)
 
 train_generator = train_datagen.flow_from_directory(
         'train/', 
-        classes = ['Cat', 'Dog'],
+        classes = ['dandelion', 'grass'],
         target_size=(200, 200),
         batch_size=5,
         class_mode='binary')
 
 validation_generator = validation_datagen.flow_from_directory(
         'valid/', 
-        classes = ['Cat', 'Dog'],
+        classes = ['dandelion', 'grass'],
         target_size=(200, 200),
         batch_size=19,
         class_mode='binary',
@@ -92,10 +91,11 @@ history = model.fit(train_generator,
       validation_data = validation_generator,
       validation_steps=8)
 
-uploaded = ['test.jpg']
+# uploaded = ['test2.jpg']
+uploaded = ["00000001.jpg", "00000002.jpg", "00000003.jpg", "00000004.jpg", "00000005.jpg", "00000006.jpg", "00000007.jpg", "00000008.jpg", "00000009.jpg", "00000010.jpg", "00000011.jpg", "00000012.jpg", "00000013.jpg", "00000014.jpg", "00000015.jpg", "00000016.jpg", "00000017.jpg", "00000018.jpg", "00000019.jpg", "00000020.jpg", "00000021.jpg", "00000022.jpg", "00000023.jpg", "00000024.jpg", "00000025.jpg", "00000026.jpg", "00000027.jpg", "00000028.jpg", "00000029.jpg", "00000030.jpg"]
 
 for fn in uploaded:
-    path = 'content/' + fn
+    path = 'train/dandelion/' + fn
     img = image.load_img(path, target_size=(200, 200))
     x = image.img_to_array(img)
     plt.imshow(x / 255.)
@@ -104,6 +104,6 @@ for fn in uploaded:
     classes = model.predict(images, batch_size=10)
     print(classes[0])
     if classes[0] < 0.5:
-        print(fn + " is a Cat")
+        print(fn + " is dandelion")
     else:
-        print(fn + " is a Dog")
+        print(fn + " is grass")
