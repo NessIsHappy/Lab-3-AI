@@ -8,7 +8,7 @@ from tensorflow.keras.preprocessing import image
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
-def identify_picture(train_path: str, valid_path: str, pic_path: str) -> None:
+def identify_picture(train_path: str, valid_path: str, pic_path: str) -> str:
 
     train_human_dir = os.path.join(train_path + 'human')
 
@@ -34,8 +34,8 @@ def identify_picture(train_path: str, valid_path: str, pic_path: str) -> None:
 
     pic_index = 0
 
-    fig = plt.gcf()
-    fig.set_size_inches(ncols * 4, nrows * 4)
+    # fig = plt.gcf()
+    # fig.set_size_inches(ncols * 4, nrows * 4)
 
     pic_index += 8
     next_human_pic = [os.path.join(train_human_dir, fname)
@@ -43,10 +43,10 @@ def identify_picture(train_path: str, valid_path: str, pic_path: str) -> None:
     next_fox_pic = [os.path.join(train_fox_dir, fname)
                     for fname in train_fox_names[pic_index - 8:pic_index]]
 
-    for i, img_path in enumerate(next_human_pic + next_fox_pic):
-        sp = plt.subplot(nrows, ncols, i + 1)
-        sp.axis('Off')
-        img = mpimg.imread(img_path)
+    # for i, img_path in enumerate(next_human_pic + next_fox_pic):
+        # sp = plt.subplot(nrows, ncols, i + 1)
+        # sp.axis('Off')
+        # img = mpimg.imread(img_path)
         # plt.imshow(img)
 
     # plt.show()
@@ -57,7 +57,7 @@ def identify_picture(train_path: str, valid_path: str, pic_path: str) -> None:
             'train2/',
             classes=['human', 'fox'],
             target_size=(200, 200),
-            batch_size=30,
+            batch_size=100,
             class_mode='binary')
 
     validation_generator = validation_datagen.flow_from_directory(
@@ -91,15 +91,12 @@ def identify_picture(train_path: str, valid_path: str, pic_path: str) -> None:
         path = fn
         img = image.load_img(path, target_size=(200, 200))
         x = image.img_to_array(img)
-        plt.imshow(x / 255.)
+        # plt.imshow(x / 255.)
         x = np.expand_dims(x, axis=0)
         images = np.vstack([x])
         classes = model.predict(images, batch_size=10)
         print(classes[0])
         if classes[0] < 0.5:
-            print(fn + " is human")
+            return 'На фото изображен человек.'
         else:
-            print(fn + " is fox")
-
-
-identify_picture('train2/', 'valid2/', 'contentFox/00000001.jpg')
+            return 'На фото изображена лиса.'
