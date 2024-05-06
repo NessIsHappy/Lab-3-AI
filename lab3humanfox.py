@@ -57,7 +57,7 @@ def identify_picture(train_path: str, valid_path: str, pic_path: str) -> str:
             'train2/',
             classes=['human', 'fox'],
             target_size=(200, 200),
-            batch_size=100,
+            batch_size=200,
             class_mode='binary')
 
     validation_generator = validation_datagen.flow_from_directory(
@@ -69,7 +69,7 @@ def identify_picture(train_path: str, valid_path: str, pic_path: str) -> str:
             shuffle=False)
 
     model = tf.keras.models.Sequential([tf.keras.layers.Flatten(input_shape=(200, 200, 3)),
-                                        tf.keras.layers.Dense(128, activation=tf.nn.relu),
+                                        tf.keras.layers.Dense(256, activation=tf.nn.relu),
                                         tf.keras.layers.Dense(1, activation=tf.nn.sigmoid)])
 
     model.summary()
@@ -84,6 +84,9 @@ def identify_picture(train_path: str, valid_path: str, pic_path: str) -> str:
                         verbose=1,
                         validation_data=validation_generator,
                         validation_steps=8)
+
+    model_path = ('/Users/happy/Desktop/ЦК/Lab_3_AI/my_model.h5')
+    model.save(model_path)
 
     uploaded = [pic_path]
 
@@ -100,3 +103,6 @@ def identify_picture(train_path: str, valid_path: str, pic_path: str) -> str:
             return 'На фото изображен человек.'
         else:
             return 'На фото изображена лиса.'
+
+
+identify_picture('train2/', 'valid2/', 'content/test.jpg')

@@ -1,9 +1,10 @@
 import telebot
 import sqlite3
+import tensorflow as tf
+import numpy as np
+from tensorflow.keras.preprocessing import image
 
-from lab3humanfox import identify_picture
-
-token = '7088127624:AAH6hA1c1sZ6fCMedrXDAIvus2xYj8WN07Q'
+token = ''
 bot = telebot.TeleBot(token)
 
 name = None
@@ -20,7 +21,8 @@ def handle_register(message):
     conn = sqlite3.connect('lab3.sql')
     cur = conn.cursor()
 
-    cur.execute('CREATE TABLE IF NOT EXISTS users (id int auto_increment primary key, name varchar(50), pass varchar(50))')
+    cur.execute('CREATE TABLE IF NOT EXISTS users '
+                '(id int auto_increment primary key, name varchar(50), pass varchar(50))')
     conn.commit()
 
     cur.execute('SELECT * FROM users')
@@ -94,6 +96,10 @@ def process_login(message):
     conn = sqlite3.connect('lab3.sql')
     cur = conn.cursor()
 
+    cur.execute('CREATE TABLE IF NOT EXISTS users '
+                '(id int auto_increment primary key, name varchar(50), pass varchar(50))')
+    conn.commit()
+
     cur.execute('SELECT * FROM users')
     users = cur.fetchall()
 
@@ -126,6 +132,7 @@ def handle_logout(message):
 def handle_predict(message):
     global flagLogin
     if flagLogin:
+        bot.send_message(message.chat.id, 'Отправьте мне фото, а я скажу кто изображен: человек или лиса.')
         bot.register_next_step_handler(message, human_or_fox)
     else:
         bot.send_message(message.chat.id, 'Сначала вам нужно пройти регистрацию/аутентификацию!')
@@ -135,11 +142,27 @@ def handle_predict(message):
 def human_or_fox(message):
     photo = message.photo[-1]
     file_info = bot.get_file(photo.file_id)
+    print(file_info)
     downloaded_file = bot.download_file(file_info.file_path)
     save_path = 'photo.jpg'
     with open(save_path, 'wb') as new_file:
         new_file.write(downloaded_file)
-    bot.reply_to(message, identify_picture('train2/', 'valid2/', 'photo.jpg'))
 
+    bot.send_message(message.chat.id, identify_message('photo.jpg'))
+
+
+def identify_message(file_path):
+    model = tf.keras.models.load_model('/Users/happy/Desktop/ЦК/Lab_3_AI/my_model.h5')
+    img = image.load_img(file_path, target_size=(200, 200))
+    x = image.img_to_array(img)
+    # plt.imshow(x / 255.)
+    x = np.expand_dims(x, axis=0)
+    images = np.vstack([x])
+    classes = model.predict(images, batch_size=10)
+    print(classes[0])
+    if classes[0] < 0.5:
+        return 'На фото изображен человек.'
+    else:
+        return 'На фото изображена лиса.'
 
 bot.polling()
